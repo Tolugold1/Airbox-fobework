@@ -107,20 +107,3 @@ exports.HTTPUserForgotPassword = async (req, res, next) => {
     next(error)
   }
 };
-
-exports.HTTPResetPassword = async (req, res, next) => {
-  try {
-    const data = await Service.resetPassword({
-      id: req.body.userId,
-      password: req.body.newPassword,
-    });
-    handleResponse({
-      res,
-      status: 200,
-      message: "Password has been reset",
-      data,
-    });
-  } catch (error) {
-    next(error);
-  }
-};

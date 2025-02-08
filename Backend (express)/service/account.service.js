@@ -15,6 +15,10 @@ const {
 } = require("../utils/error");
 const { AUTH_TYPE } = require("../utils/constants");
 const { redisClient } = require("../utils/redis/redisConf");
+const Userverification = require("../model/verificationSchema");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const { SignToken } = require("../utils/helper")
 
 exports.SignUp = async function ({ name, email, password, confirmPassword, acctType }) {
     try {
@@ -46,25 +50,23 @@ exports.SignUp = async function ({ name, email, password, confirmPassword, acctT
   
       user.profile_id = profile_id;
    
+      let uniquestring = await SignToken({id: user._id});
 
+      let userVerificationData = await Userverification.findOne({ userId: user._id });
+      if (!userVerificationData) {
+          let user_verification = new Userverification({
+              userId: user._id,
+              uniquestring: uniquestring,
+              expireAt: Date.now() + 1800000,
+          });
+          await user_verification.save();
+      }
       // await sendVerificationMail.sendVerificationMail({
       //   _id: user._id,
       //   username: user.username,
       //   flag: user
       //   type: "verification"
       // });
-  
-      // make a mailing API call here
-    //   const mailBody = {
-    //     recipient: user.email,
-    //     userId: user._id,
-    //     flow
-    //   };
-    //   axios.post(`${process.env.MAILING_SERVICE_URL}/mail/in-app/send-verification-mail`, mailBody, {
-    //     headers: {
-    //       "Content-Type": "application/json"
-    //     }
-    //   });
   
       await user.save();
   
@@ -378,7 +380,7 @@ exports.ForgotPassword = async function ({ username }) {
         throw NotFoundError("User not found");
       }
   
-      let reset_token = await helper.SignToken({ id: user._id });
+      let reset_token = await SignToken({ id: user._id });
   
       user.reset_password_token = reset_token;
       user.reset_password_expiresAt = Date.now() + 300000;
@@ -391,33 +393,68 @@ exports.ForgotPassword = async function ({ username }) {
       //   type: "reset_password"
       // });
 
-      // make a mailing API call here
-    //   let mailBody = {
-    //     recipient: user.username,
-    //     userId: user._id,
-    //     token: reset_token
-    //   }
-    //   axios.post(`${process.env.MAILING_SERVICE_URL}/mail/in-app/forgot-password-mail`, mailBody, {
-    //     headers: {
-    //       "Content-Type": "application/json"
-    //     }
-    //   });
-  
       await user.save();
     } catch (error) {
       throw error;
     }
 };
 
-exports.resetPassword = async function ({ id, password }) {
-    try {
-      const user = await User.findById(id);
-      if (!user) throw NotFoundError("User not found");
-  
-      user.password = password;
-      await user.save();
-      return user.AcctType;
-    } catch (error) {
-      throw error;
+exports.VerifyOTP = async function ({ res, id, otpstring, flow }) {
+  try {
+    let [otp_user, user ] = await Promise.all([
+      Userverification.findOne({ userId: id }).lean(),
+      User.findOne({ _id: id }).lean()
+    ]);
+    let current_otp = otp_user;
+    console.log("Userverification", current_otp);
+
+    console.log("otpstring = ", otpstring);
+    const redirectUrl = process.env.FRONTEND_URL;
+
+    if (current_otp.expireAt < Date.now()) {
+      await Userverification.deleteOne({ userId: id });
+      await User.deleteOne({ _id: id });
+      res.redirect(`${redirectUrl}/login?exp=Account could not be verified`); // this link will still change
+      // throw ExpiredError("Account could not be verified");
     }
+
+    let verified = jwt.verify(otpstring, process.env.SECRET_KEY);
+
+    console.log("verified", verified);
+    if (!verified) {
+      throw InvalidDetailsError("invalid OTP");
+    }
+
+    await User.updateOne({ _id: id }, { Confirmed: true }, { new: true });
+    await Userverification.deleteOne({ userId: id });
+    // res.redirect(process.env.MOIL_FRONTEND_URL + `/login`);
+    // get user in other to know the type of user they are either employer or employee
+    const route = "Login page";
+    const query = (flow && flow !== "default") ? `?flowId=${flow}` : '';
+    res.redirect(`${redirectUrl}/login${query}`); // this link will still change
+  } catch (error) {
+    throw error;
+  }
+};
+
+exports.validateToken = async function ({ res, id, token }) {
+  try {
+    const user = await User.findOne({ _id: id });
+    if (!user) throw err.NotFoundError("User not found");
+
+    if (Date.now() > user.reset_password_expiresAt) {
+      const route = "Expire";
+      helper.handleRedirectLink(res, id, route);
+      throw ExpiredError("OTP has expired");
+    }
+    console.log("status", verify);
+    console.log("reset_token", user.reset_password_token);
+    if (token === user.reset_password_token) {
+      const route = "Reset password page";
+      console.log("route", route);
+      helper.handleRedirectLink(res, id, route);
+    } else {
+      throw InvalidDetailsError("Token not the same with the store token", 400);
+    }
+  } catch (error) { }
 };

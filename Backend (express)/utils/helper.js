@@ -1,3 +1,9 @@
+require("dotenv").config();
+const ClientProfile = require("../model/clientAccount");
+const BusinessProfile = require("../model/businessAccount")
+const jwt = require("jsonwebtoken");
+const User = require("../model/account");
+
 exports.generateUniqueString = async (user) => {
     // you are not considering those that signed up with google or linkedin
     // we wait till they create a profile, and then from ther we can get their name.
@@ -12,7 +18,7 @@ exports.generateUniqueString = async (user) => {
           return;
         }
       } else if (user.AcctType === ACCOUNT_TYPE.EMPLOYER) {
-        profile = await EmployerProfile.findOne({userId: user._id});
+        profile = await BusinessProfile.findOne({userId: user._id});
         if (profile) {
           name = profile.name.split(' ').join('_');
         } else {
@@ -48,4 +54,25 @@ exports.handleResponse = ({ res, status, message, data }) => {
         throw error;
     }
 }
-  
+
+exports.SignToken = async function (id, override = {}) {
+  return jwt.sign(id, process.env.SECRET_KEY);
+};
+
+
+// this function takes the User model and the user id
+exports.handleRedirectLink = async (res, id, route, data) => {
+  const user = await User.findOne({ _id: id });
+
+  if (route === "Login page") {
+    res.redirect(`${process.env.FRONTEND_URL}/login`);
+  }
+
+  if (route === "Expire") {
+    res.redirect(process.env.FRONTEND_URL + `/login?exp="Your time has expired"`);
+  }
+
+  if (route === "Reset password page") {
+    res.redirect(`${process.env.FRONTEND_URL}/reset?userId=${id}`);
+  }
+};
