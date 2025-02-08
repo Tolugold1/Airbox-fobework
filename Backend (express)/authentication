@@ -1,0 +1,119 @@
+require("dotenv").config();
+const passport = require("passport");
+const localStrategy = require("passport-local").Strategy;
+const jwtExtract = require("passport-jwt").ExtractJwt;
+const jwtStrategy = require("passport-jwt").Strategy;
+const jwt = require("jsonwebtoken");
+const User = require("./model/account");
+const { ACCOUNT_TYPE, AUTH_TYPE } = require("./utils/constants");
+const helper = require("./utils/helper");
+const { redisClient } = require("./utils/redisCache");
+const { hashSync, compare } = require("bcrypt");
+const { ForbiddenError } = require("./utils/error");
+const Analytics = require("./Model/analytics");
+
+//require google strategy
+var GoogleStrategy = require("passport-google-oauth20").Strategy;
+
+passport.use(new localStrategy(User.authenticate()));
+passport.serializeUser(function (user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function (id, done) {
+  User.findById(id, function (err, user) {
+    done(err, user);
+  }).maxTimeMS(60000);
+});
+
+exports.getToken = function (user) {
+  return jwt.sign(user, process.env.SECRET_KEY, { expiresIn: process.env.ACCESS_TOKEN_LIFETIME });
+};
+
+exports.getRefreshToken = function (user) {
+  return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: process.env.REFRESH_TOKEN_LIFETIME });
+};
+
+exports.encryptToken = function (token) {
+  let salt = 10;
+  return hashSync(token, salt);
+};
+
+const opt = {};
+opt.jwtFromRequest = jwtExtract.fromAuthHeaderAsBearerToken();
+opt.secretOrKey = process.env.SECRET_KEY;
+
+exports.jwtPassport = passport.use(
+  new jwtStrategy(opt, (jwt_payload, done) => {
+    // console.log("jwt_payload", jwt_payload);
+
+    User.findOne({ _id: jwt_payload._id }, (err, user) => {
+      if (err) {
+        return done(err, false);
+      }
+      if (user) {
+        return done(null, user);
+      } else {
+        return done(null, false);
+      }
+    }).maxTimeMS(60000);
+  })
+);
+
+exports.verifyUser = passport.authenticate("jwt", { session: "false" });
+
+// google client authentication middleware
+
+passport.use(
+  "google",
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.CURRENT_URL + "/api/auth/google/redirect",
+    },
+    function (accessToken, refreshToken, profile, done) {
+      User.findOne({ username: profile.emails[0].value }, async (err, user) => {
+        if (err) {
+          return done(err, false);
+        } else if (!err && user !== null) {
+          // ckeck if user has a profile_id
+          if (user.profile_id !== undefined && user.profile_id !== null) {
+            return done(null, user);
+          } else {
+            user.profile_id = await helper.generateUniqueString(user);
+            user.save();
+          }
+        } else {
+          // create a new user document for the current user.
+          user = new User({ username: profile.emails[0].value });
+          if (profile.displayName) {
+            user.name = profile.displayName;
+          }
+          if (profile.emails[0].value) {
+            user.email = profile.emails[0].value.toLowerCase();
+          }
+          if (profile.photos[0].value) {
+            user.profile_pics = profile.photos[0].value;
+          }
+          user.AcctType = "Client";
+          let profile_id = await helper.generateUniqueString(user);
+          user.profile_id = profile_id;
+          user.authType = AUTH_TYPE.OAUTH;
+        //   let analytics = new Analytics({userId: user._id});
+        //   await analytics.save();
+        //   user.analytics = analytics._id;
+          user.Confirmed = true;
+          user.save((err, user) => {
+            if (err) {
+              return done(err, false);
+            } else {
+              return done(null, user);
+            }
+          });
+        }
+      }).maxTimeMS(60000);
+    }
+  )
+);
+
