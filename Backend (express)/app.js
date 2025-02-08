@@ -3,12 +3,21 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
+require("dotenv").config();
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var { HTTPError } = require("./utils/error");
+var cors = require("cors");
 
 var app = express();
+var mongoose = require("mongoose");
+
+mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true, useFindAndModify: false }, (err, db) => {
+  if (err) console.log("Connection to mongodb failed");
+  if (db) console.log("Connection to mongodb successful!!!");
+});
+
+app.use(cors({ origin: ["http://localhost:3000", "http://localhost:8000" ], credentials: true }));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

@@ -96,4 +96,3 @@ exports.cancelBookedItem = async({ bookingId, updateData }) => {
     }
 }
 
-module.exports = { bookItem, editBookedItem, cancelBookedItem };

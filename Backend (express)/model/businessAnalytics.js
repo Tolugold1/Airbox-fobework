@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const businessAnalytics = new Schema({
     businessId: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Types.ObjectId,
         ref: "businessProfile",
         required: true,
         index: true
@@ -31,3 +31,5 @@ const businessAnalytics = new Schema({
 }, { timestamps: true, versionKey: false });
 
 const BusinessAnalytics = mongoose.model("businessAnalytics", businessAnalytics);
+
+module.exports = BusinessAnalytics;

@@ -4,7 +4,8 @@
 // book an Item
 // edit a booked Item
 // cancel a booked Item
-const ClientProfiles = require("../model/clientAccount");
+const BusinessProfile = require("../model/businessAccount");
+const BusinessAnalytics = require("../model/businessAnalytics");
 const {
     ForbiddenError,
     InvalidDetailsError,
@@ -25,8 +26,14 @@ const {
  */
 exports.createProfile = async ({ profileData }) => {
     try {
-        const newProfile = new ClientProfiles(profileData);
-        return await newProfile.save();
+        const Profile = new BusinessProfile(profileData);
+        // also create the business analytics
+        const analytics = new BusinessAnalytics({ businessId: newProfile._id});
+        await Promise.all([
+            Profile.save(), 
+            analytics.save()
+        ]);
+        return { Profile }
     } catch (error) {
         throw new Error(`Error creating profile: ${error.message}`);
     }
@@ -39,7 +46,7 @@ exports.createProfile = async ({ profileData }) => {
  */
 exports.getProfile = async ({userId}) => {
     try {
-        let profile = await ClientProfiles.findOne({ userId });
+        let profile = await BusinessProfile.findOne({ userId });
         if (!profile) throw NotFoundError("Profile not found", 404);
         return profile;
     } catch (error) {
@@ -55,12 +62,10 @@ exports.getProfile = async ({userId}) => {
  */
 exports.updateProfile = async ({userId, updateData}) => {
     try {
-        let profile = await ClientProfiles.findOne({ userId });
+        let profile = await BusinessProfile.findOne({ userId });
         if (!profile) throw ForbiddenError("Profile does not exist");
-        return await ClientProfiles.findOneAndUpdate({ userId }, updateData, { new: true });
+        return await BusinessProfile.findOneAndUpdate({ userId }, updateData, { new: true });
     } catch (error) {
         throw new Error(`Error updating profile: ${error.message}`);
     }
 }
-
-

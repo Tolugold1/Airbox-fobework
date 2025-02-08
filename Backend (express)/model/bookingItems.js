@@ -5,7 +5,7 @@ const constants = require("../utils/constants");
 const bookingItems = new Schema(
   {
     businessId: {
-      type: mongoose.Schema.ObjectId,
+      type: mongoose.Types.ObjectId,
       ref: "businessProfile",
       index: true,
       required: true,

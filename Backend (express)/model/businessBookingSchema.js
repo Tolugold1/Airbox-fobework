@@ -4,12 +4,12 @@ const { BOOKING_STATUS } = require("../utils/constants");
 
 const bookingSchema = new Schema({
     businessId: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Types.ObjectId,
         ref: "businessProfile",
         index: true
     },
     clientProfileId: {
-        type: mongoose.Schema.ObjectId, // clientProfileId
+        type: mongoose.Types.ObjectId, // clientProfileId
         ref: "clientprofile",
         required: true
     },
@@ -23,7 +23,7 @@ const bookingSchema = new Schema({
         default: 'scheduled'
     },
     bookedItemId: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Types.ObjectId,
         ref: "bookingItem",
         index: true
     }

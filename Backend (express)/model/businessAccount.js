@@ -5,7 +5,7 @@ const constants = require("../utils/constants");
 const businessProfileSchema = new Schema(
   {
     userId: {
-      type: mongoose.Schema.ObjectId,
+      type: mongoose.Types.ObjectId,
       ref: "user",
       index: true,
       required: true,
@@ -47,4 +47,4 @@ const businessProfileSchema = new Schema(
 
 const BusinessProfile = mongoose.model("businessProfile", businessProfileSchema);
 
-module.exports = EmployerProfile;
+module.exports = BusinessProfile;
