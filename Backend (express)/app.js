@@ -8,14 +8,12 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var { HTTPError } = require("./utils/error");
 var cors = require("cors");
-
+var connect = require("./utils/connectDB")
 var app = express();
 var mongoose = require("mongoose");
 
-mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true, useFindAndModify: false }, (err, db) => {
-  if (err) console.log("Connection to mongodb failed");
-  if (db) console.log("Connection to mongodb successful!!!");
-});
+// connect to the database.
+connect();
 
 app.use(cors({ origin: ["http://localhost:3000", "http://localhost:8000" ], credentials: true }));
 
