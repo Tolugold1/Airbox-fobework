@@ -18,7 +18,8 @@ const { redisClient } = require("../utils/redis/redisConf");
 const Userverification = require("../model/verificationSchema");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { SignToken } = require("../utils/helper")
+const { SignToken } = require("../utils/helper");
+const { sendVerificationMail } = require("../email/email");
 
 exports.SignUp = async function ({ name, email, password, confirmPassword, acctType }) {
     try {
@@ -61,12 +62,10 @@ exports.SignUp = async function ({ name, email, password, confirmPassword, acctT
           });
           await user_verification.save();
       }
-      // await sendVerificationMail.sendVerificationMail({
-      //   _id: user._id,
-      //   username: user.username,
-      //   flag: user
-      //   type: "verification"
-      // });
+      await sendVerificationMail({
+        // type: "verification",
+        token: uniquestring
+      });
   
       await user.save();
   
@@ -152,46 +151,34 @@ exports.SignIn = async function ({ res, username, password }) {
                 } else {
                     linkDirection = "/user/dashboard";
                 }
-                  // if (!referral) {
-                  //   // create a referrer link or model here
-                  //   await createReferralLink({userId: user._id, baseUrl: process.env.MOIL_FRONTEND_URL, email: user.email});
-                  // }
-                  // // await redisClient.set("token-" + user._id, token);
-                  // res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-                  const data = {
-                    success: true,
-                    statusCode: 200,
-                    status: "Sign in successful",
-                    token: token,
-                    refreshToken: refreshToken,
-                    lastpage: linkDirection,
-                    profile_status: { profile_status: profile_status, AcctType: user.AcctType,
-                    referral: referral?.link }
-                  };
-                  // check if signed_in flag is true
-                  return data;
+                const data = {
+                  success: true,
+                  statusCode: 200,
+                  status: "Sign in successful",
+                  token: token,
+                  refreshToken: refreshToken,
+                  lastpage: linkDirection,
+                  profile_status: { profile_status: profile_status, AcctType: user.AcctType,
+                  referral: referral?.link }
+                };
+                // check if signed_in flag is true
+                return data;
               } else {
                 let lastpage = await redisClient.get("lastPage-" + user._id);
-                  let linkDirection;
-                  if (lastpage && lastpage.length !== 0) {
-                      if (JSON.parse(lastpage).includes("messages")) {
-                        linkDirection = "/user/messages";
-                      } else if (JSON.parse(lastpage).includes("/form") || JSON.parse(lastpage).includes("/user/profile/update")) {
-                        linkDirection = "/user/welcome";
-                      } else {
-                        linkDirection = JSON.parse(lastpage);
-                      }
-                      console.log("lastpage after parse", lastpage)
-                  } else {
-                    linkDirection = "/user/welcome";
-                  }
-                  // if (!referral) {
-                  //   // create a referrer link or model here
-                  //   await createReferralLink({userId: user._id, baseUrl: process.env.MOIL_FRONTEND_URL, email: user.email});
-                  // }
-                  profile_status = false;
-                  // // await redisClient.set("token-" + user._id, token);
-                  // res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+                let linkDirection;
+                if (lastpage && lastpage.length !== 0) {
+                    if (JSON.parse(lastpage).includes("messages")) {
+                      linkDirection = "/user/messages";
+                    } else if (JSON.parse(lastpage).includes("/form") || JSON.parse(lastpage).includes("/user/profile/update")) {
+                      linkDirection = "/user/welcome";
+                    } else {
+                      linkDirection = JSON.parse(lastpage);
+                    }
+                    console.log("lastpage after parse", lastpage)
+                } else {
+                  linkDirection = "/user/welcome";
+                }
+                profile_status = false;
                 const data = {
                   success: true,
                   statusCode: 200,
@@ -399,14 +386,20 @@ exports.ForgotPassword = async function ({ username }) {
     }
 };
 
-exports.VerifyOTP = async function ({ res, id, otpstring, flow }) {
+exports.VerifyOTP = async function ({ res, otpstring }) {
   try {
+    let verified = jwt.verify(otpstring, process.env.SECRET_KEY);
+    console.log("verified", verified);
+    if (!verified) {
+      throw InvalidDetailsError("invalid OTP");
+    }
     let [otp_user, user ] = await Promise.all([
-      Userverification.findOne({ userId: id }).lean(),
-      User.findOne({ _id: id }).lean()
+      Userverification.findOne({ userId: verified.id }).lean(),
+      User.findOne({ _id: verified.id }).lean()
     ]);
     let current_otp = otp_user;
-    console.log("Userverification", current_otp);
+
+    if (!otp_user && !user) throw NotFoundError("No user account found.")
 
     console.log("otpstring = ", otpstring);
     const redirectUrl = process.env.FRONTEND_URL;
@@ -418,27 +411,25 @@ exports.VerifyOTP = async function ({ res, id, otpstring, flow }) {
       // throw ExpiredError("Account could not be verified");
     }
 
-    let verified = jwt.verify(otpstring, process.env.SECRET_KEY);
-
-    console.log("verified", verified);
-    if (!verified) {
-      throw InvalidDetailsError("invalid OTP");
-    }
-
     await User.updateOne({ _id: id }, { Confirmed: true }, { new: true });
     await Userverification.deleteOne({ userId: id });
     // res.redirect(process.env.MOIL_FRONTEND_URL + `/login`);
     // get user in other to know the type of user they are either employer or employee
     const route = "Login page";
-    const query = (flow && flow !== "default") ? `?flowId=${flow}` : '';
-    res.redirect(`${redirectUrl}/login${query}`); // this link will still change
+    res.redirect(`${redirectUrl}/login`); // this link will still change
   } catch (error) {
     throw error;
   }
 };
 
-exports.validateToken = async function ({ res, id, token }) {
+exports.validateToken = async function ({ res, token }) {
   try {
+    const verified = jwt.verify(token, process.env.SECRET_KEY);
+    if (!verified) {
+      console.log("Token not verified.")
+      // redirect to the same forgot password page.
+      res.redirect(`${process.env.FRONTEND_URL}/forgotPassword`)
+    }
     const user = await User.findOne({ _id: id });
     if (!user) throw err.NotFoundError("User not found");
 
