@@ -2,7 +2,6 @@ const Service = require("../service/booking.service");
 const { 
   handleResponse
 } = require("../utils/helper");
-const authenticate = require("../authenticate");
 
 exports.HTTPCreateBookingItems = async (req, res, next) => {
   try {
@@ -71,6 +70,48 @@ exports.HTTPEditBookingByClient = async (req, res, next) => {
       console.log("signup error", error);
       next(error);
     }
+};
+
+exports.HTTPGetClientBookings = async (req, res, next) => {
+  try {
+    let {    
+      clientProfileId,
+    } = req.body;
+    const data = await Service.getbookingsByClient({ 
+      clientProfileId,
+    });
+
+    handleResponse({
+      res,
+      status: 200,
+      message: "Client bookings record gotten successfully.",
+      data,
+    });
+  } catch (error) {
+    console.log("signup error", error);
+    next(error);
+  }
+};
+
+exports.HTTPGetBusinessBookings = async (req, res, next) => {
+  try {
+    let {    
+      businessId,
+    } = req.body;
+    const data = await Service.getBusinessBookingsRecord({ 
+      businessId,
+    });
+
+    handleResponse({
+      res,
+      status: 200,
+      message: "Business bookings record gotten successfully.",
+      data,
+    });
+  } catch (error) {
+    console.log("signup error", error);
+    next(error);
+  }
 };
 
 exports.HTTPCancelBooking = async (req, res, next) => {

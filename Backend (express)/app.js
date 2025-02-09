@@ -4,16 +4,25 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require("dotenv").config();
+const session = require("express-session");
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+const bookingRouter = require("./routes/bookings.router");
+const businessAnalyticsRouter = require("./routes/business.analytics.router");
+const clientRouter = require("./routes/client.router");
+const businessRouter = require("./routes/business.router")
+
 var { HTTPError } = require("./utils/error");
 var cors = require("cors");
-var connect = require("./utils/connectDB")
+var { connectDB } = require("./utils/connectDB")
 var app = express();
 var mongoose = require("mongoose");
+const passport = require("passport");
+
 
 // connect to the database.
-connect();
+connectDB();
 
 app.use(cors({ origin: ["http://localhost:3000", "http://localhost:8000" ], credentials: true }));
 
@@ -27,8 +36,29 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use(
+  session({
+    name: "session_id",
+    saveUninitialized: false,
+    resave: false,
+    secret: process.env.SECRET_KEY,
+    // cookie: {
+    //   maxAge: 1000 * 60 * 60 * 2, // 2 hours
+    //   secure: false,
+    //   httpOnly: true,
+    // }
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use('/api', indexRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/booking', bookingRouter);
+app.use('/api/businessAnalytics', businessAnalyticsRouter);
+app.use('/api/client', clientRouter);
+app.use('/api/business', businessRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

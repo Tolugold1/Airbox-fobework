@@ -2,7 +2,6 @@ const Service = require("../service/account.service");
 const { 
   handleResponse
 } = require("../utils/helper");
-const authenticate = require("../authenticate");
 
 exports.HTTPUserSignUp = async (req, res, next) => {
   try {

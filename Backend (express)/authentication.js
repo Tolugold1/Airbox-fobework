@@ -7,10 +7,8 @@ const jwt = require("jsonwebtoken");
 const User = require("./model/account");
 const { ACCOUNT_TYPE, AUTH_TYPE } = require("./utils/constants");
 const helper = require("./utils/helper");
-const { redisClient } = require("./utils/redisCache");
+const { redisClient } = require("./utils/redis/redisConf");
 const { hashSync, compare } = require("bcrypt");
-const { ForbiddenError } = require("./utils/error");
-const Analytics = require("./Model/analytics");
 
 //require google strategy
 var GoogleStrategy = require("passport-google-oauth20").Strategy;

@@ -2,7 +2,6 @@ const Service = require("../service/business.service");
 const { 
   handleResponse
 } = require("../utils/helper");
-const authenticate = require("../authenticate");
 
 exports.HTTPCreateProfile = async (req, res, next) => {
   try {

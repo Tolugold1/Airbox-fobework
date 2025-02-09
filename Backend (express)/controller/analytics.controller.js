@@ -2,7 +2,6 @@ const Service = require("../service/business.analytics.service");
 const { 
   handleResponse
 } = require("../utils/helper");
-const authenticate = require("../authenticate");
 
 exports.HTTPUpdateAnalytics = async (req, res, next) => {
   try {
@@ -55,5 +54,5 @@ exports.HTTPGetAnalytics = async (req, res, next) => {
       console.log("signup error", error);
       next(error);
     }
-  };
+};
   

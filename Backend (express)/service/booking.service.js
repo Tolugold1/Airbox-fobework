@@ -1,7 +1,6 @@
 const ClientBookings = require("../model/clientBookings");
 const BookingItems = require("../model/bookingItems");
 const Bookings = require("../model/businessBookingSchema");
-const BookingItems = require("../model/bookingItems");
 const { 
     NotFoundError,
     InvalidDetailsError
@@ -53,6 +52,34 @@ exports.bookItem = async ({clientProfileId, bookedItemId, bookingDetails}) => {
         return { savedClientBooking, savedBusinessBooking };
     } catch (error) {
         throw new Error(`Error booking item: ${error.message}`);
+    }
+}
+
+/**
+ * Get client bookings
+ * @param {String} clientProfileId - Client profile Id to get the bookings for the customber/client
+ * @returns {Promise<Object>}
+*/
+exports.getbookingsByClient = async ({ clientProfileId }) => {
+    try {
+        let customerBookings = await ClientBookings.find({ clientProfileId });
+        return { customerBookings }
+    } catch (error) {
+        throw new Error(`Error getting user bookings, Error: ${error.message}`)
+    }
+}
+
+/**
+ * Get business bookings
+ * @param {String} businessId
+ * @returns {Promise<Object>}
+*/
+exports.getBusinessBookingsRecord = async ({ businessId }) => {
+    try {
+        let businessBookings = await Bookings.find({ businessId });
+        return { businessBookings };
+    } catch (error) {
+        throw new Error(`Error getting user bookings, Error: ${error.message}`)
     }
 }
 

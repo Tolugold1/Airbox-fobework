@@ -64,6 +64,7 @@ exports.SignUp = async function ({ name, email, password, confirmPassword, acctT
       }
       await sendVerificationMail({
         // type: "verification",
+        recipient: user.email,
         token: uniquestring
       });
   
@@ -372,13 +373,10 @@ exports.ForgotPassword = async function ({ username }) {
       user.reset_password_token = reset_token;
       user.reset_password_expiresAt = Date.now() + 300000;
   
-      // await sendVerificationMail.sendVerificationMail({
-      //   _id: user._id,
-      //   username: user.username,
-      //   token: reset_token,
-      //   flag: user.AcctType,
-      //   type: "reset_password"
-      // });
+      await sendVerificationMail({
+        recipient: user.username,
+        token: reset_token,
+      });
 
       await user.save();
     } catch (error) {

@@ -42,9 +42,6 @@ exports.updateBusinessAnalytics = async ({
     }
 }
 
-const BusinessAnalytics = require("../models/businessAnalytics");
-
-
 /**
  * Get booking analytics formatted for charts.
  * @param {String} businessId - The business ID.
