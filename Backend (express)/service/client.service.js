@@ -23,8 +23,9 @@ const {
  * @param {Object} profileData - The profile details.
  * @returns {Promise<Object>}
  */
-exports.createProfile = async ({ profileData }) => {
+exports.createProfile = async (profileData) => {
     try {
+        console.log("profileData", profileData);
         const newProfile = new ClientProfiles(profileData);
         return await newProfile.save();
     } catch (error) {
@@ -57,7 +58,13 @@ exports.updateProfile = async ({userId, updateData}) => {
     try {
         let profile = await ClientProfiles.findOne({ userId });
         if (!profile) throw ForbiddenError("Profile does not exist");
-        return await ClientProfiles.findOneAndUpdate({ userId }, updateData, { new: true });
+        profile.Fullname = updateData.Fullname;
+        profile.Email = updateData.Email;
+        profile.phone_number = updateData.phone_number;
+        profile.Address = updateData.Address;
+        profile.About = updateData.About;
+        await profile.save();
+        return profile;
     } catch (error) {
         throw new Error(`Error updating profile: ${error.message}`);
     }

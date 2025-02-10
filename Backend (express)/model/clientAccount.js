@@ -13,16 +13,6 @@ const clientProfileSchema = new Schema({
     required: true,
     unique: false
   },
-  FirstName: {
-    type: String,
-    // required: true,
-    unique: false
-  },
-  LastName: {
-    type: String,
-    // required: true,
-    unique: false
-  },
   Address: {
     type: String,
   },
@@ -31,10 +21,6 @@ const clientProfileSchema = new Schema({
   },
   Phone_number: {
     type: String
-  },
-  photo: {
-    type: String,
-    required: false,
   },
   About: {
     type: String

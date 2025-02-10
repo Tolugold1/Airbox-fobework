@@ -20,7 +20,7 @@ exports.sendMail = async (payload) => {
     try {
         let mailOption = {
             from: process.env.EMAIL,
-            to: payload.recipient,
+            to: payload.to,
             subject: payload.subject,
             html: payload.html
         }

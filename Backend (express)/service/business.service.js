@@ -24,11 +24,11 @@ const {
  * @param {Object} profileData - The profile details.
  * @returns {Promise<Object>}
  */
-exports.createProfile = async ({ profileData }) => {
+exports.createProfile = async (profileData) => {
     try {
         const Profile = new BusinessProfile(profileData);
         // also create the business analytics
-        const analytics = new BusinessAnalytics({ businessId: newProfile._id});
+        const analytics = new BusinessAnalytics({ businessId: Profile._id});
         await Promise.all([
             Profile.save(), 
             analytics.save()
@@ -50,6 +50,7 @@ exports.getProfile = async ({userId}) => {
         if (!profile) throw NotFoundError("Profile not found", 404);
         return profile;
     } catch (error) {
+        console.log("Error", error);
         throw new Error(`Error fetching profile: ${error.message}`);
     }
 }
@@ -64,7 +65,17 @@ exports.updateProfile = async ({userId, updateData}) => {
     try {
         let profile = await BusinessProfile.findOne({ userId });
         if (!profile) throw ForbiddenError("Profile does not exist");
-        return await BusinessProfile.findOneAndUpdate({ userId }, updateData, { new: true });
+        profile.name = updateData.name;
+        profile.Email = updateData.Email;
+        profile.type_of_business = updateData.type_of_business;
+        profile.phone_number = updateData.phone_number;
+        profile.location = updateData.location;
+        profile.About = updateData.About;
+        profile.hours = updateData.hours;
+        profile.open_days = updateData.open_days;
+        profile.website = updateData.website;
+        await profile.save();
+        return profile;
     } catch (error) {
         throw new Error(`Error updating profile: ${error.message}`);
     }

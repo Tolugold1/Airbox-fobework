@@ -3,6 +3,9 @@ const ClientProfile = require("../model/clientAccount");
 const BusinessProfile = require("../model/businessAccount")
 const jwt = require("jsonwebtoken");
 const User = require("../model/account");
+const { ACCOUNT_TYPE } = require("./constants")
+const bcrypt = require("bcrypt");
+const { nanoid } = require('nanoid')
 
 exports.generateUniqueString = async (user) => {
     // you are not considering those that signed up with google or linkedin
@@ -36,6 +39,10 @@ exports.generateUniqueString = async (user) => {
     name = user.name.split(' ').join('_') + nanoid(4) //new Date().getTime()
     return name
 }
+
+exports.compareHashed = async function (otp, hashed) {
+  return await bcrypt.compare(otp, hashed);
+};
 
 exports.handleResponse = ({ res, status, message, data }) => {
     try {

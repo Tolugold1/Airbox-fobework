@@ -39,7 +39,7 @@ const bookingItems = new Schema(
         min: 0
     },
     location: {
-        type: String
+      type: String
     }
   },
   { timestamps: true, versionKey: false }

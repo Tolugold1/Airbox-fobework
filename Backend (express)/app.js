@@ -54,7 +54,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/api', indexRouter);
-app.use('/api/users', usersRouter);
+app.use('/api/auth', usersRouter);
 app.use('/api/booking', bookingRouter);
 app.use('/api/businessAnalytics', businessAnalyticsRouter);
 app.use('/api/client', clientRouter);

@@ -17,8 +17,6 @@ const clientBooking = new Schema({
     },
     company_Contact: {
         type: String,
-        enum: [ ...Object.values(BOOKING_STATUS)],
-        default: "scheduled"
     },
     bookedItemId: {
         type: mongoose.Types.ObjectId,
@@ -27,6 +25,8 @@ const clientBooking = new Schema({
     },
     status: {
         type: String,
+        enum: [ ...Object.values(BOOKING_STATUS)],
+        default: "scheduled"
     }
 }, { timestamps: true });
 

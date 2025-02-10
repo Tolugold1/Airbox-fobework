@@ -15,7 +15,7 @@ const businessProfileSchema = new Schema(
       unique: true,
       required: true,
     },
-    email: { type: String, required: true, unique: true },
+    Email: { type: String, required: true, unique: true },
     type_of_business: {
       type: String,
       required: false,
@@ -24,12 +24,9 @@ const businessProfileSchema = new Schema(
       type: String,
     },
     location: {
-      state: { type: String, required: true },
-      city: { type: String, required: true },
-      // country: { type: String, required: true },
-      zipcode: { type: String, required: true },
+      type: String
     },
-    about: {
+    About: {
       type: String,
       required: true,
     },

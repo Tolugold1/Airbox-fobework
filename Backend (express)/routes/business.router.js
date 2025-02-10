@@ -2,12 +2,14 @@ var express = require('express');
 var router = express.Router();
 var authenticate = require("../authentication.js");
 const controller = require("../controller/business.controller.js");
+const { 
+    validateBusinessSchema,
+ } = require("../validation/business.joi.js")
 
+router.post("/create-profile",  validateBusinessSchema,  authenticate.authenticateJWT,  controller.HTTPCreateProfile)
 
-router.post("/create-profile",  /* validate input using joi */  authenticate.authenticateJWT,  controller.HTTPCreateProfile)
+router.get("/get-profile", authenticate.authenticateJWT, controller.HTTPGetProfile)
 
-router.get("/get-profile", /* valid input using joi */ authenticate.authenticateJWT, controller.HTTPGetProfile)
-
-router.post("/update-profile", /* validate input using joi */ authenticate.authenticateJWT, controller.HTTPUpdateProfile)
+router.put("/update-profile", authenticate.authenticateJWT, controller.HTTPUpdateProfile)
 
 module.exports = router;

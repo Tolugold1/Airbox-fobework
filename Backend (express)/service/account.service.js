@@ -1,5 +1,7 @@
 require("dotenv").config();
 const User = require("../model/account");
+const ClientProfile = require("../model/clientAccount");
+const BusinessProfile = require("../model/businessAccount")
 const {
     ForbiddenError,
     InvalidDetailsError,
@@ -20,13 +22,17 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { SignToken } = require("../utils/helper");
 const { sendVerificationMail } = require("../email/email");
+const helper = require("../utils/helper")
+const { compareHashed } = require("../utils/helper");
+const authenticate = require("../authentication");
 
 exports.SignUp = async function ({ name, email, password, confirmPassword, acctType }) {
     try {
-      email = email.trim().toLowerCase();
-      name = name.trim();
-      password = password.trim();
-      confirmPassword = confirmPassword.trim();
+      console.log("email", email);
+      email = email?.trim().toLowerCase();
+      name = name?.trim();
+      password = password?.trim();
+      confirmPassword = confirmPassword?.trim();
 
       if (await User.findOne({ email }).lean().select("email")) {
         throw AlreadyExistError("User with this email already exists");
@@ -44,7 +50,6 @@ exports.SignUp = async function ({ name, email, password, confirmPassword, acctT
       user.AcctType = acctType;
     //   user.analytics = analytics._id;
       user.name = name;
-      user.phone_number = phone_number;
   
       let profile_id = await helper.generateUniqueString(user);
       console.log(user, profile_id)
@@ -65,7 +70,8 @@ exports.SignUp = async function ({ name, email, password, confirmPassword, acctT
       await sendVerificationMail({
         // type: "verification",
         recipient: user.email,
-        token: uniquestring
+        token: uniquestring,
+        route: "verify-uniquestring"
       });
   
       await user.save();
@@ -78,7 +84,7 @@ exports.SignUp = async function ({ name, email, password, confirmPassword, acctT
 
 exports.SignIn = async function ({ res, username, password }) {
     try {
-      username = username.trim().toLowerCase();
+      username = username?.trim().toLowerCase();
       let user = await User.findOne({ username: username });
       // compare password
       if (!user) {
@@ -187,13 +193,12 @@ exports.SignIn = async function ({ res, username, password }) {
                   token: token,
                   refreshToken: refreshToken,
                   lastpage: linkDirection,
-                  profile_status: { profile_status: profile_status, AcctType: user.AcctType,
-                  referral: referral?.link }
+                  profile_status: { profile_status: profile_status, AcctType: user.AcctType }
                 };
                 return data;
               } 
             } else if (user.AcctType === "Official") {
-              const employer = await EmployerProfile.findOne({ userId: user._id });
+              const employer = await BusinessProfile.findOne({ userId: user._id });
               if (employer) {
                 profile_status = true;
                   let lastpage = await redisClient.get("lastPage-" + user._id);
@@ -218,8 +223,7 @@ exports.SignIn = async function ({ res, username, password }) {
                   token: token,
                   refreshToken: refreshToken,
                   lastpage: linkDirection,
-                  profile_status: { profile_status: profile_status, AcctType: user.AcctType,
-                  referral: referral?.link }
+                  profile_status: { profile_status: profile_status, AcctType: user.AcctType }
                 };
                 return data;
               } else {
@@ -243,8 +247,7 @@ exports.SignIn = async function ({ res, username, password }) {
                   token: token,
                   refreshToken: refreshToken,
                   lastpage: linkDirection,
-                  profile_status: { profile_status: profile_status, AcctType: user.AcctType,
-                  referral: referral?.link }
+                  profile_status: { profile_status: profile_status, AcctType: user.AcctType }
                 };
                 return data;
               }
@@ -376,6 +379,7 @@ exports.ForgotPassword = async function ({ username }) {
       await sendVerificationMail({
         recipient: user.username,
         token: reset_token,
+        route: "validate-token"
       });
 
       await user.save();
@@ -388,37 +392,47 @@ exports.VerifyOTP = async function ({ res, otpstring }) {
   try {
     let verified = jwt.verify(otpstring, process.env.SECRET_KEY);
     console.log("verified", verified);
+
     if (!verified) {
       throw InvalidDetailsError("invalid OTP");
     }
-    let [otp_user, user ] = await Promise.all([
-      Userverification.findOne({ userId: verified.id }).lean(),
+
+    let [otp_user, user] = await Promise.all([
+      Userverification.findOne({ userId: verified.id }).lean(), 
       User.findOne({ _id: verified.id }).lean()
     ]);
-    let current_otp = otp_user;
 
-    if (!otp_user && !user) throw NotFoundError("No user account found.")
-
-    console.log("otpstring = ", otpstring);
-    const redirectUrl = process.env.FRONTEND_URL;
-
-    if (current_otp.expireAt < Date.now()) {
-      await Userverification.deleteOne({ userId: id });
-      await User.deleteOne({ _id: id });
-      res.redirect(`${redirectUrl}/login?exp=Account could not be verified`); // this link will still change
-      // throw ExpiredError("Account could not be verified");
+    if (!otp_user && !user) {
+      throw NotFoundError("No user account found.");
     }
 
-    await User.updateOne({ _id: id }, { Confirmed: true }, { new: true });
-    await Userverification.deleteOne({ userId: id });
-    // res.redirect(process.env.MOIL_FRONTEND_URL + `/login`);
-    // get user in other to know the type of user they are either employer or employee
-    const route = "Login page";
-    res.redirect(`${redirectUrl}/login`); // this link will still change
+    console.log("otpstring =", otpstring);
+    const redirectUrl = process.env.FRONTEND_URL;
+
+    // Check if OTP is expired
+    if (otp_user.expireAt < Date.now()) {
+      await Userverification.deleteOne({ userId: verified.id });
+      await User.deleteOne({ _id: verified.id });
+      // Redirect immediately if expired
+      return res.redirect(`${redirectUrl}/login?exp=Account could not be verified`);
+    }
+
+    // Update user as confirmed
+    await User.updateOne({ _id: verified.id }, { Confirmed: true }, { new: true });
+    await Userverification.deleteOne({ userId: verified.id });
+
+    // Redirect to login after successful verification
+    return res.redirect(`${redirectUrl}/login`);
+
   } catch (error) {
-    throw error;
+    console.error("Error in VerifyOTP:", error);
+    // Only send a response if headers haven't already been sent
+    if (!res.headersSent) {
+      return res.status(500).json({ error: error.message });
+    }
   }
 };
+
 
 exports.validateToken = async function ({ res, token }) {
   try {

@@ -5,14 +5,13 @@ const {
 
 exports.HTTPCreateProfile = async (req, res, next) => {
   try {
-    const data = await Service.createProfile({ 
-        ...req.body
-    });
+    let body = req.body;
+    const data = await Service.createProfile(body);
 
     handleResponse({
       res,
       status: 200,
-      message: "Business booking item created successfully.",
+      message: "Business profile created successfully.",
       data,
     });
   } catch (error) {
@@ -24,42 +23,35 @@ exports.HTTPCreateProfile = async (req, res, next) => {
 
 exports.HTTPGetProfile = async (req, res, next) => {
     try {
-      let {    
-        userId
-      } = req.body;
+
       const data = await Service.getProfile({ 
-        clientProfileId, 
-        bookedItemId, 
-        bookingDetails
+        userId: req.user._id
       });
   
       handleResponse({
         res,
         status: 200,
-        message: "Business analytics gotten successfully.",
+        message: "Business profile gotten successfully.",
         data,
       });
     } catch (error) {
-      console.log("signup error", error);
+      console.log("Getting profile error", error);
       next(error);
     }
 };
   
 exports.HTTPUpdateProfile = async (req, res, next) => {
     try {
-      let {    
-        userId,
-        updateData
-      } = req.body;
+      let updateData = req.body;
       const data = await Service.updateProfile({ 
-        userId,
+        userId: req.user._id,
         updateData
       });
   
       handleResponse({
         res,
         status: 200,
-        message: "Business analytics gotten successfully.",
+        message: "Business profile updated successfully.",
         data,
       });
     } catch (error) {
