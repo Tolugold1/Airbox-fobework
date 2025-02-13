@@ -17,7 +17,7 @@ const ProtectedRoute = ({ requiredRole }) => {
 
   // If a role is required but the acctType doesn't match, redirect to the home page.
   if (requiredRole && acctType !== requiredRole) {
-    return navigate('/');
+    return navigate('/login');
   } else {
     return (
         <Outlet />

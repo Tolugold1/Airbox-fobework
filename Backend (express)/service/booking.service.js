@@ -25,7 +25,7 @@ exports.createBookingItem = async (bookItemData) => {
         let returnedItem = await BookingItems.find({ businessId: bookItemData.businessId });
         return returnedItem;
     } catch (error) {
-        throw new Error(`Error creating an item that can be booked for by the customer or client, ${error.message}`)
+        throw error;
     }
 }
 
@@ -34,7 +34,7 @@ exports.getBusinessCreatedBookingItems = async ({ businessId }) => {
         let businessItems = await BookingItems.find({ businessId });
         return { businessItems }
     } catch (error) {
-        throw new Error(`Error getting business booking items, Error: ${error.message}`)
+        throw error;
     }
 }
 
@@ -58,7 +58,7 @@ exports.editBookingItem = async (bookItemData) => {
         return { businessItems };
     } catch (error) {
         console.log("error", error);
-        throw new Error(`Error updating an item that can be booked for by the customer or client, ${error.message}`)
+        throw error;
     }
 }
 
@@ -119,7 +119,7 @@ exports.bookItem = async ({
         return { savedClientBooking, savedBusinessBooking };
     } catch (error) {
         console.log("error", error);
-        throw new Error(`Error booking item: ${error.message}`);
+        throw error;
     }
 }
 
@@ -128,7 +128,7 @@ exports.allBookingItemFromBusinesses = async () => {
         let allBookedItems = await BookingItems.find({});
         return { allBookedItems }
     } catch (error) {
-        throw new Error(`Error getting all booking items, Error: ${error.message}`)
+        throw error;
     }
 }
 
@@ -142,7 +142,7 @@ exports.getbookingsByClient = async ({ clientProfileId }) => {
         let customerBookings = await ClientBookings.find({ clientProfileId });
         return { customerBookings }
     } catch (error) {
-        throw new Error(`Error getting user bookings, Error: ${error.message}`)
+        throw error;
     }
 }
 
@@ -156,7 +156,7 @@ exports.getBusinessBookingsRecord = async ({ businessId }) => {
         let businessBookings = await Bookings.find({ businessId }).populate("bookedItemId").populate("clientProfileId");
         return businessBookings;
     } catch (error) {
-        throw new Error(`Error getting user bookings, Error: ${error.message}`)
+        throw error;
     }
 }
 
@@ -175,7 +175,7 @@ exports.editBookedItemByClient = async ({clientProfileId, bookingId, updateData}
         ]);
         return { updateClientBooking }
     } catch (error) {
-        throw new Error(`Error updating booked item: ${error.message}`);
+        throw error;
     }
 }
 
@@ -206,7 +206,7 @@ exports.UpdateBookedItemByBusiness = async({ bookingId, updateData }) => {
         await businessAnalytics.save();
         return { booking }
     } catch (error) {
-        throw new Error(`Error updating booked item: ${error.message}`);
+        throw error;
     }
 }
 

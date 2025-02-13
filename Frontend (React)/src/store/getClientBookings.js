@@ -24,7 +24,8 @@ const getClientBookingItemSlice = createSlice({
   initialState: { clientBooking: null, status: 'idle', clientBookingError: null },
   reducers: {
     clearClientBookingItem: (state) => {
-        state.successMessage = null;
+        state.clientBooking = null;
+        state.status = "idle";
         state.clientBookingError = null;
     },
   },

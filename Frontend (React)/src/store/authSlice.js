@@ -50,7 +50,6 @@ const authSlice = createSlice({
         state.acctType = action.payload.profile_status.AcctType;
         state.profile_status = action.payload.profile_status.profile_status;
         state.refreshtoken = action.payload.refreshtoken;
-        state.lastpage = action.payload.lastpage;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = 'failed';

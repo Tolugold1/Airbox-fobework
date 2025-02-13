@@ -24,7 +24,8 @@ const getBusinessProfileSlice = createSlice({
   initialState: { businessProfile: null, status: 'idle', businessProfileError: null },
   reducers: {
     clearBusinessprofile: (state) => {
-        state.successMessage = null;
+        state.businessProfile = null;
+        state.status = "idle";
         state.businessProfileError = null;
     },
   },

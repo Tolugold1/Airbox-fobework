@@ -23,7 +23,8 @@ const getBusinessBookingItemSlice = createSlice({
   initialState: { items: [], status: 'idle', itemsError: null },
   reducers: {
     clearBusinessBookingItem: (state) => {
-        state.successMessage = null;
+        state.items = [];
+        state.status = "idle";
         state.itemsError = null;
     },
     setBusinessBookingItem: (state, action) => {

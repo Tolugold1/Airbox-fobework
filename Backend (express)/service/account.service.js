@@ -94,19 +94,6 @@ exports.SignIn = async function ({ res, username, password }) {
         throw NotFoundError("Account not found.", 404);
       } else {
         if (user.authType !== "PASSWORD" || user.Confirmed !== true) {
-          if (user.Confirmed !== true) {
-            // resend verification mail
-            // make a mailing API call here
-            let mailBody = {
-              recipient: user.email,
-              userId: user._id,
-            }
-            axios.post(`${process.env.MAILING_SERVICE_URL}/mail/in-app/send-verification-mail`, mailBody, {
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
           const data = {
             success: false,
             statusCode: 404,
@@ -146,47 +133,18 @@ exports.SignIn = async function ({ res, username, password }) {
   
               if (client !== null) {
                 profile_status = true;
-                let lastpage = await redisClient.get("lastPage-" + user._id);
-                let linkDirection;
-                if (lastpage && lastpage.length !== 0) {
-                    if (JSON.parse(lastpage).includes("messages")) {
-                    linkDirection = "/user/messages";
-                    } else if (JSON.parse(lastpage).includes("/form") || JSON.parse(lastpage).includes("/user/profile/update")) {
-                    linkDirection = "/user/dashboard";
-                    } else {
-                    linkDirection = JSON.parse(lastpage);
-                    }
-                    console.log("lastpage after parse", lastpage)
-                } else {
-                    linkDirection = "/user/dashboard";
-                }
                 const data = {
                   success: true,
                   statusCode: 200,
                   status: "Sign in successful",
                   token: token,
                   refreshToken: refreshToken,
-                  lastpage: linkDirection,
-                  profile_status: { profile_status: profile_status, AcctType: user.AcctType,
-                  referral: referral?.link }
+                  profile_status: { profile_status: profile_status, AcctType: user.AcctType }
                 };
                 // check if signed_in flag is true
                 return data;
               } else {
-                let lastpage = await redisClient.get("lastPage-" + user._id);
-                let linkDirection;
-                if (lastpage && lastpage.length !== 0) {
-                    if (JSON.parse(lastpage).includes("messages")) {
-                      linkDirection = "/user/messages";
-                    } else if (JSON.parse(lastpage).includes("/form") || JSON.parse(lastpage).includes("/user/profile/update")) {
-                      linkDirection = "/user/welcome";
-                    } else {
-                      linkDirection = JSON.parse(lastpage);
-                    }
-                    console.log("lastpage after parse", lastpage)
-                } else {
-                  linkDirection = "/user/welcome";
-                }
+                
                 profile_status = false;
                 const data = {
                   success: true,
@@ -194,7 +152,6 @@ exports.SignIn = async function ({ res, username, password }) {
                   status: "Sign in successful",
                   token: token,
                   refreshToken: refreshToken,
-                  lastpage: linkDirection,
                   profile_status: { profile_status: profile_status, AcctType: user.AcctType }
                 };
                 return data;
@@ -203,52 +160,23 @@ exports.SignIn = async function ({ res, username, password }) {
               const employer = await BusinessProfile.findOne({ userId: user._id });
               if (employer) {
                 profile_status = true;
-                  let lastpage = await redisClient.get("lastPage-" + user._id);
-                  let linkDirection;
-                  if (lastpage && lastpage.length !== 0) {
-                      if (JSON.parse(lastpage).includes("inbox")) {
-                          linkDirection = "/employer/inbox";
-                      } else if (JSON.parse(lastpage).includes("welcome")) {
-                        linkDirection = "/employer/dashboard";
-                      } else {
-                          linkDirection = JSON.parse(lastpage);
-                      }
-                  } else {
-                      linkDirection = "/employer/dashboard";
-                  }
-                  console.log("lastpage after parse", lastpage)
-                  console.log("lastpage after parse", linkDirection)
                 const data = {
                   success: true,
                   statusCode: 200,
                   status: "Sign in successful",
                   token: token,
                   refreshToken: refreshToken,
-                  lastpage: linkDirection,
                   profile_status: { profile_status: profile_status, AcctType: user.AcctType }
                 };
                 return data;
               } else {
                 profile_status = false;
-                let lastpage = await redisClient.get("lastPage-" + user._id);
-                let linkDirection;
-                  if (lastpage && lastpage.length !== 0) {
-                      if (JSON.parse(lastpage).includes("inbox")) {
-                          linkDirection = "/employer/inbox";
-                      } else {
-                          linkDirection = JSON.parse(lastpage);
-                      }
-                      console.log("lastpage after parse", lastpage)
-                  } else {
-                      linkDirection = "/employer/welcome";
-                  }
                 const data = {
                   success: true,
                   statusCode: 200,
                   status: "Sign in successful",
                   token: token,
                   refreshToken: refreshToken,
-                  lastpage: linkDirection,
                   profile_status: { profile_status: profile_status, AcctType: user.AcctType }
                 };
                 return data;
@@ -343,7 +271,7 @@ exports.insueRefreshToken = async function ({refreshToken, userId}) {
       // console.log("user", user);
       return user;
     } catch (error) {
-      throw NotFoundError("User not found");
+      throw error;
     }
   };
   

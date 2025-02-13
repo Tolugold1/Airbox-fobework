@@ -39,7 +39,7 @@ exports.updateBusinessAnalytics = async ({
 
         await businessAnalytics.save();
     } catch (error) {
-        throw new Error(`Error occured while updating business analytics, ${error.message}`);
+      throw error;
     }
 }
 
@@ -147,6 +147,6 @@ exports.getBookingAnalytics = async ({ businessId, timeframe }) => {
 
     return { formattedData, overallAnalytics };
   } catch (error) {
-    throw new Error(`Error fetching booking analytics: ${error.message}`);
+    throw error;
   }
 };

@@ -25,6 +25,7 @@ const getClientProfileSlice = createSlice({
   reducers: {
     clearClientprofile: (state) => {
         state.clientProfile = null;
+        state.status = "idle";
         state.clientProfileError = null;
     },
     updateProfile: (state, action) => {

@@ -7,6 +7,14 @@ import { FiArrowLeft } from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import { FcGoogle } from 'react-icons/fc';
 import { setAuthMessage, clearAuthMessage } from '../store/authSlice';
+import { clearClientBookingItem } from "../store/getClientBookings";
+import { clearClientprofile } from "../store/getClientProfile";
+import { clearBusinessprofile } from "../store/getBusinessProfile";
+import { clearBusinessBooking } from "../store/getBusinessBookings";
+import { clearBusinessBookingItem } from "../store/getBusinessBookingItems";
+import { clearAnalytics } from "../store/businessAnalytics";
+import { loginUserOAuth, clearOAuthMessage } from "../store/goggleOauth";
+
 
 const LoginPage = () => {
   const {
@@ -17,8 +25,19 @@ const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  let { error } = useSelector((state) => state.auth);
-  const [ acctType, setAcctType ] = useState(null);
+  let { acctType, error } = useSelector((state) => state.auth);
+  const [ acctTypeT, setAcctType ] = useState(null);
+
+  const google = useSelector((state) => state.google);
+
+  useEffect(() => {
+    dispatch(clearClientprofile());
+    dispatch(clearClientBookingItem());
+    dispatch(clearAnalytics());
+    dispatch(clearBusinessBookingItem());
+    dispatch(clearBusinessBooking());
+    dispatch(clearBusinessprofile());
+  }, []);
 
   console.log("error", error);
   useEffect(() => {
@@ -30,29 +49,49 @@ const LoginPage = () => {
       }, 50);
       dispatch(clearAuthMessage());
     }
+
+    if (google.error) {
+      setTimeout(() => {
+        toast.error(error, {
+          position: "top-center",
+        });
+      }, 50);
+      dispatch(clearOAuthMessage());
+    }
   }, [error]);
 
   const handleGoogleSignIn = async () => {
     try {
-
+      if (acctTypeT == null) {
+        toast("Please select the account type you would like to log in to", {
+          position: "top-center"
+        })
+      } else {
+        if (acctTypeT == "Official") {
+          await dispatch(loginUserOAuth("Official"));
+        } else {
+          await dispatch(loginUserOAuth("Client"));
+        }
+      }
     } catch (error) {
       console.error('Error during Google sign-in:', error)
       // dispatch the error
 
     }
   }
+  console.log("acctType", acctType);
 
   const onSubmit = async (data) => {
     try {
-      data.acctType = acctType;
+      data.acctType = acctTypeT;
       // Dispatch the login action
       const resultAction = await dispatch(loginUser(data));
       console.log('resultAction:', resultAction);
       if (resultAction.payload.status == 'Sign in successful' && resultAction.payload.statusCode == 200) {
         // Redirect based on the checkbox (isBusiness) value.
-        if (data.acctType == "Official") {
+        if (data.acctType == "Official" && acctType == "Official") {
           navigate('/business-dashboard');
-        } else {
+        } else if ( data.acctType == "Client"  && acctType == "Client"){
           navigate('/client-dashboard');
         }
       } else {
@@ -111,7 +150,7 @@ const LoginPage = () => {
                 id="isBusiness"
                 name="check"
                 className="mr-2"
-                checked={acctType == "Official"}
+                checked={acctTypeT == "Official"}
                 onChange={() => setAcctType("Official")}
               />
               <label htmlFor="isBusiness" className="text-gray-400">
@@ -124,7 +163,7 @@ const LoginPage = () => {
                 id="isClient"
                 name="check"
                 className="mr-2"
-                checked={acctType == "Client"}
+                checked={acctTypeT == "Client"}
                 onChange={() => setAcctType("Client")}
               />
               <label htmlFor="isClient" className="text-gray-400">

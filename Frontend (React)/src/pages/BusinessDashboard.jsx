@@ -9,7 +9,7 @@ import BusinessSideBar from './businessSideBar';
 // ✅ Register Chart.js components
 // ✅ Register all required ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement);
-
+import { ToastContainer, toast } from 'react-toastify';
 import { getBusinessProfile } from '../store/getBusinessProfile';
 import { getBusinessBooking } from '../store/getBusinessBookings';
 import { getBusinessAnalytics } from '../store/businessAnalytics';
@@ -24,7 +24,7 @@ const BusinessDashboard = () => {
   const [analytics, setAnalytics] = useState([]);
   const { register, handleSubmit, reset } = useForm();
 
-  let { businessProfile, businessProfileError } = useSelector((state) => state.getBusinessProfile);
+  let { businessProfile, status, businessProfileError } = useSelector((state) => state.getBusinessProfile);
   const [period, setPeriod] = useState("Daily"); // Default selection
   const [isOpen, setIsOpen] = useState(false); // Dropdown state
   const [ schedule, setSchedule ] = useState(0);
@@ -37,12 +37,12 @@ const BusinessDashboard = () => {
     setIsOpen(false); // Close dropdown after selection
   };
 
-  const { analyticsStore } = useSelector((state) => state.getBusinessAnalytics);
+  const  analyticsStore = useSelector((state) => state.getBusinessAnalytics);
 
   let businessBooking  = useSelector((state) => state.getBusinessBooking);
 
   useEffect(() => {
-    dispatch(getBusinessAnalytics({businessId: businessProfile._id, timeframe: period}));
+    dispatch(getBusinessAnalytics({businessId: businessProfile?._id, timeframe: period}));
   }, [period])
 
   useEffect(() => {
@@ -50,21 +50,32 @@ const BusinessDashboard = () => {
       try {
         // const profileResponse = await api.get('/api/business/get-profile');
         const profileResponse = await dispatch(getBusinessProfile())
+        console.log("profileResponse", profileResponse)
+        if (profileResponse.payload == undefined) {
+          // it means no profile exist
+          // redirect to profile page
+          toast("Please complete your profile to continue.", {
+            position: "top-center",
+          });
+          window.location.href = "/business-profile";
+        }
         setProfile(profileResponse.data);
 
         // const itemsResponse = await api.get('/api/booking/get-business-bookings');
-        const itemsResponse = await dispatch(getBusinessBooking(businessProfile._id));
+        const itemsResponse = await dispatch(getBusinessBooking(businessProfile?._id));
         console.log("bookableItems", itemsResponse);
         setBookableItems(itemsResponse.data);
 
-        const analyticsResponse = await dispatch(getBusinessAnalytics({businessId: businessProfile._id, timeframe: period}));
-        setAnalytics(analyticsResponse.payload.formattedData || analyticsStore);
+        if (businessProfile) {
+          const analyticsResponse = await dispatch(getBusinessAnalytics({businessId: businessProfile?._id, timeframe: period}));
+          setAnalytics(analyticsResponse.payload.formattedData);
+        }
 
-        setSchedule(analyticsResponse.payload.overallAnalytics.TotalScheduledBooking);
+        setSchedule(analyticsStore.analytics.overallAnalytics?.TotalScheduledBooking);
 
-        setCancel(analyticsResponse.payload.overallAnalytics.TotalCancelledBooking);
+        setCancel(analyticsStore.analytics.overallAnalytics?.TotalCancelledBooking);
 
-        setComplete(analyticsResponse.payload.overallAnalytics.TotalCompletedBooking);
+        setComplete(analyticsStore.analytics.overallAnalytics?.TotalCompletedBooking);
 
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -172,11 +183,11 @@ const BusinessDashboard = () => {
    console.log("businessBooking", businessBooking.businessBookings);
    businessBooking = businessBooking.businessBookings;
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100 w-full">
       {/* Sidebar */}
-      <div className=''>
+      {/* <div className=''>
         <BusinessSideBar />
-      </div>
+      </div> */}
 
       {/* Main Dashboard */}
       <main className="flex-1 p-6">
@@ -275,6 +286,7 @@ const BusinessDashboard = () => {
           </table>
         </div>
       </main>
+      <ToastContainer />
     </div>
   );
 };

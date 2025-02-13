@@ -5,6 +5,7 @@ import { BsArrowReturnLeft } from "react-icons/bs";
 import { logout } from "../store/authSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { IoPersonSharp } from "react-icons/io5";
 
 const BusinessSideBar = () => {
     const navigate = useNavigate();
@@ -27,6 +28,11 @@ const BusinessSideBar = () => {
                     <Link to="/business-service">
                     <li className={`flex items-center p-3 ${path === "/business-service" ? "text-blue-500 bg-blue-100" : "text-gray-600"} rounded-lg`}>
                         <FaFileInvoice className="md:mr-3 w-[50px] h-[25px]"  /> <span className="hidden md:block">Service</span>
+                    </li>
+                    </Link>
+                    <Link to="/business-profile">
+                    <li className={`flex items-center p-3 ${path === "/business-profile" ? "text-blue-500 bg-blue-100" : "text-gray-600"} rounded-lg`}>
+                        <IoPersonSharp className="md:mr-3 w-[50px] h-[25px]"  /> <span className="hidden md:block">Profile</span>
                     </li>
                     </Link>
                     <Link to="#" onClick={onLogout}>

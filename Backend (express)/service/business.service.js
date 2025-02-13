@@ -35,7 +35,8 @@ exports.createProfile = async (profileData) => {
         ]);
         return { Profile }
     } catch (error) {
-        throw new Error(`Error creating profile: ${error.message}`);
+        console.log("error", error);
+        throw error;
     }
 }
 
@@ -51,7 +52,7 @@ exports.getProfile = async ({userId}) => {
         return profile;
     } catch (error) {
         console.log("Error", error);
-        throw new Error(`Error fetching profile: ${error.message}`);
+        throw error;
     }
 }
 
@@ -77,6 +78,6 @@ exports.updateProfile = async ({userId, updateData}) => {
         await profile.save();
         return profile;
     } catch (error) {
-        throw new Error(`Error updating profile: ${error.message}`);
+        throw error;
     }
 }

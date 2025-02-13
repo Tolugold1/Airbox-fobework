@@ -1,5 +1,7 @@
 var express = require('express');
 var router = express.Router();
+const bodyParser = require("body-parser");
+router.use(bodyParser.json());
 var authenticate = require("../authentication.js");
 const controller = require("../controller/business.controller.js");
 const { 

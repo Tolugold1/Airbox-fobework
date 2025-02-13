@@ -70,14 +70,12 @@ app.use(function(req, res, next) {
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
-  res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  if (err instanceof HTTPError ) {
+  if (err instanceof HTTPError) {
     return res.status(err.statusCode).json({
-      title: err.title,
+      title: err.name,
       message: err.message,
-      status: res.statusCode
     });
   }
 
@@ -88,10 +86,11 @@ app.use(function(err, req, res, next) {
       message: `${Object.keys(err.keyValue)} already exists`
     })
   }
+  res.locals.message = err.message;
 
   // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  res.status(500).json({ title: "Error", message: "Error message", error: err});
+  // res.render('error');
 });
 
 module.exports = app;

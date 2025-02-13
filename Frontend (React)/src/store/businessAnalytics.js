@@ -24,7 +24,8 @@ const getBusinessAnalyticsSlice = createSlice({
   initialState: { analytics: null, status: 'idle', analyticsError: null },
   reducers: {
     clearAnalytics: (state) => {
-        state.successMessage = null;
+        state.analytics = null;
+        state.status = "idle";
         state.analyticsError = null;
     },
   },

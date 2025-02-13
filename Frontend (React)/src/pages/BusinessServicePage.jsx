@@ -190,9 +190,7 @@ const ServicePage = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <BusinessSideBar />
+    <div className="flex min-h-screen bg-gray-100 w-full">
 
       {/* Main Content */}
       <main className="flex-1 p-6 bg-[#29293f] text-white">
@@ -222,7 +220,7 @@ const ServicePage = () => {
                 <p className="text-green-400 text-sm mt-1">💲 {service.pricing} USD</p>
 
                 <div className="text-gray-400 text-xs mt-2">
-                  ⏰ {new Date(service.availableSlots?.startTime).toLocaleTimeString()} - {new Date(service.availableSlots?.endTime).toLocaleTimeString()}
+                  ⏰ {service.availableSlots?.startTime} - {service.availableSlots?.endTime}
                 </div>
 
                 <p className="text-gray-300 text-xs mt-1">🗓 Open: {service.open_days?.join(", ")}</p>

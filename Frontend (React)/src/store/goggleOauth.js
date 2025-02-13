@@ -2,6 +2,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import api from '../services/api';
+import { backend_url } from "../baseUrl"
 
 // Async thunk for logging in the user
 export const loginUserOAuth = createAsyncThunk(
@@ -9,8 +10,11 @@ export const loginUserOAuth = createAsyncThunk(
   async (credentials, thunkAPI) => {
     try {
         // Adjust the API endpoint as needed.
-        const response = await api.post('/api/auth/login', credentials);
+        let url = credentials == "Official" ? '/api/Oauth/google2' : '/api/Oauth/google'
+        // const response = await api.get(url);
+        window.open(backend_url + `${url}`, "_self");
         // Assume your backend returns an object with { user, token }
+        console.log("response", response);
         return response.data.data;
     } catch (error) {
         console.log('Login error:', error);
@@ -19,8 +23,8 @@ export const loginUserOAuth = createAsyncThunk(
   }
 );
 
-const authSlice = createSlice({
-  name: 'auth',
+const googleAuthSlice = createSlice({
+  name: 'google',
   initialState: { user: null, token: null, status: 'idle', error: null },
   reducers: {
     logout: (state) => {
@@ -30,7 +34,7 @@ const authSlice = createSlice({
     setAuthMessage: (state, action) => {
         state.successMessage = action.payload;
     },
-    clearAuthMessage: (state) => {
+    clearOAuthMessage: (state) => {
         state.successMessage = null;
         state.error = null;
     },
@@ -47,7 +51,6 @@ const authSlice = createSlice({
         state.acctType = action.payload.profile_status.AcctType;
         state.profile_status = action.payload.profile_status.profile_status;
         state.refreshtoken = action.payload.refreshtoken;
-        state.lastpage = action.payload.lastpage;
       })
       .addCase(loginUserOAuth.rejected, (state, action) => {
         state.status = 'failed';
@@ -56,6 +59,6 @@ const authSlice = createSlice({
   }
 });
 
-export const { logout,setAuthMessage, clearAuthMessage } = authSlice.actions;
+export const { logout, setAuthMessage, clearOAuthMessage } = googleAuthSlice.actions;
 
-export default authSlice.reducer;
+export default googleAuthSlice.reducer;

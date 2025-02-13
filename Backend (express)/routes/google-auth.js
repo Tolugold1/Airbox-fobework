@@ -40,11 +40,11 @@ router.get('/google/airboxClient', passport.authenticate('google'),
 
                 res.statusCode = 200;
                 res.setHeader("Content-Type", "application/json");
-                res.redirect("http://localhost:3000/client-dashboard") // process.env.MOIL_FRONTEND_URL
+                res.redirect("http://localhost:5173/client-dashboard") // process.env.MOIL_FRONTEND_URL
             } else {
                 res.statusCode = 400;
                 res.setHeader("Content-Type", "application/json");
-                res.redirect("http://localhost:3000/client-dashboard") // process.env.MOIL_FRONTEND_URL
+                res.redirect("http://localhost:5173/client-dashboard") // process.env.MOIL_FRONTEND_URL
             }
         } catch (error) {
             next(error);
@@ -83,13 +83,14 @@ router.get('/google/official/airbox', passport.authenticate('google-alt'),
 
                 res.statusCode = 200;
                 res.setHeader("Content-Type", "application/json");
-                res.redirect("http://localhost:3000/business-dashboard") // process.env.MOIL_FRONTEND_URL
+                res.redirect("http://localhost:5173/business-dashboard") // process.env.MOIL_FRONTEND_URL
             } else {
                 res.statusCode = 400;
                 res.setHeader("Content-Type", "application/json");
-                res.redirect("http://localhost:3000/business-dashboard/login")
+                res.redirect("http://localhost:5173/business-dashboard/login")
             }
         } catch (error) {
+            console.log("error", error);
             next(error);
         }
 });

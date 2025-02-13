@@ -10,6 +10,7 @@ import getBusinessBookingSlice from './getBusinessBookings';
 import getBusinessAnalyticsSlice from './businessAnalytics';
 import createSlice from "./clientSlice";
 import createClientProfile from "./createClientProfile";
+import googleAuthSlice from "./goggleOauth"
 import { combineReducers } from 'redux';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // defaults to localStorage for web
@@ -30,7 +31,8 @@ const persistConfig = {
         "getBusinessBooking",
         "getBusinessAnalytics",
         "client",
-        "createClientProfile"
+        "createClientProfile",
+        "google"
     ] // Only persist the auth reducer; add others as needed.
 };
 
@@ -46,6 +48,7 @@ const rootReducer = combineReducers({
     getBusinessAnalytics: getBusinessAnalyticsSlice,
     client: createSlice,
     createClientProfile: createClientProfile,
+    google: googleAuthSlice
     // Add additional reducers here
 });
 

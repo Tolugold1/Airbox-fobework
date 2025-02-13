@@ -6,6 +6,7 @@ const {
 exports.HTTPCreateProfile = async (req, res, next) => {
   try {
     let body = req.body;
+    body.userId = req.user._id;
     const data = await Service.createProfile(body);
 
     handleResponse({

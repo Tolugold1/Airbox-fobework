@@ -71,7 +71,7 @@ passport.use(
       callbackURL: process.env.CURRENT_URL + "/api/Oauth/google/airboxClient",
     },
     function (accessToken, refreshToken, profile, done) {
-      User.findOne({ username: profile.emails[0].value }, async (err, user) => {
+      User.findOne({ email: profile.emails[0].value }, async (err, user) => {
         if (err) {
           return done(err, false);
         } else if (!err && user !== null) {
@@ -84,7 +84,7 @@ passport.use(
           }
         } else {
           // create a new user document for the current user.
-          user = new User({ username: profile.emails[0].value });
+          user = new User({ email: profile.emails[0].value });
           if (profile.displayName) {
             user.name = profile.displayName;
           }
@@ -123,9 +123,9 @@ passport.use(
       callbackURL: process.env.CURRENT_URL + "/api/Oauth/google/official/airbox",
     },
     function (accessToken, refreshToken, profile, done) {
-      User.findOne({ username: profile.emails[0].value }, async (err, user) => {
+      User.findOne({ email: profile.emails[0].value }, async (err, user) => {
         if (err) {
-          console.log(err);
+          console.log("Oauth", err);
           return done(err, false);
         } else if (!err && user !== null) {
           // ckeck if user has a profile_id
@@ -137,7 +137,7 @@ passport.use(
           }
         } else {
           // create a new user document for the current user.
-          user = new User({ username: profile.emails[0].value });
+          user = new User({ email: profile.emails[0].value });
           if (profile.displayName) {
             user.name = profile.displayName;
           }
@@ -174,7 +174,7 @@ passport.use(
 
 exports.authenticateJWT = async (req, res, next) => {
   const token = req.cookies.jwt;
-  console.log("token", token);
+
   if (token) {
     try {
       // Verify JWT token

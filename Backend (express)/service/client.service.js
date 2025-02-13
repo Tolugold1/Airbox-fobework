@@ -7,15 +7,7 @@
 const ClientProfiles = require("../model/clientAccount");
 const {
     ForbiddenError,
-    InvalidDetailsError,
-    UnauthorizedError,
-    FieldError,
     NotFoundError,
-    ExpiredError,
-    AlreadyExistError,
-    ApplicationError,
-    ExtractionFailed,
-    OperationFailedError,
 } = require("../utils/error");
 
 /**
@@ -29,7 +21,7 @@ exports.createProfile = async (profileData) => {
         const newProfile = new ClientProfiles(profileData);
         return await newProfile.save();
     } catch (error) {
-        throw new Error(`Error creating profile: ${error.message}`);
+        throw error;
     }
 }
 
@@ -41,11 +33,13 @@ exports.createProfile = async (profileData) => {
 exports.getProfile = async ({userId}) => {
     try {
         let profile = await ClientProfiles.findOne({ userId });
-        if (!profile) throw NotFoundError("Profile not found", 404);
+        if (profile == null) {
+            throw new NotFoundError("Profile not found");
+        }
         return profile;
     } catch (error) {
         console.log("error", error);
-        throw new Error(`Error fetching profile`);
+        throw error;
     }
 }
 
@@ -67,7 +61,7 @@ exports.updateProfile = async ({userId, updateData}) => {
         await profile.save();
         return profile;
     } catch (error) {
-        throw new Error(`Error updating profile: ${error.message}`);
+        throw error;
     }
 }
 

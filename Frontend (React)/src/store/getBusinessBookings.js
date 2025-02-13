@@ -24,7 +24,8 @@ const getBusinessBookingSlice = createSlice({
   initialState: { businessBookings: null, status: 'idle', businessBookingsError: null },
   reducers: {
     clearBusinessBooking: (state) => {
-        state.successMessage = null;
+        state.businessBookings = null;
+        state.status = "idle";
         state.businessBookingsError = null;
     },
   },

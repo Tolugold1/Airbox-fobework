@@ -10,6 +10,8 @@ import ClientDashboard from './pages/ClientDashboard';
 import ProtectedRoute from './components/protectedRoute';
 import ServicePage from './pages/BusinessServicePage';
 import ClientProfilePage from "./pages/clientProfile";
+import BusinessHOC from './layout/businessHOC';
+import BusinessProfilePage from "./pages/businessProfile";
 
 function App() {
   return (
@@ -21,9 +23,12 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         {/* Protected Routes */}
-        <Route element={<ProtectedRoute requiredRole="Official" />}>
-          <Route path="/business-dashboard" element={<BusinessDashboard />} />
-          <Route path="/business-service" element={<ServicePage />} />
+        <Route element={<BusinessHOC />}>
+          <Route element={<ProtectedRoute requiredRole="Official" />}>
+            <Route path="/business-dashboard" element={<BusinessDashboard />} />
+            <Route path="/business-service" element={<ServicePage />} />
+            <Route path="/business-profile" element={<BusinessProfilePage />} />
+          </Route>
         </Route>
         <Route element={<ProtectedRoute requiredRole="Client" />}>
           <Route path="/client-dashboard" element={<ClientDashboard />} />
