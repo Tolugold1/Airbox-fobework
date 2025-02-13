@@ -12,10 +12,9 @@ module.exports = {
             _id: Joi.any(),
             clientProfileId: Joi.any(),
             appointmentDate: Joi.string(),
-            company_name: Joi.string(),
-            company_Contact: Joi.string(),
             status: Joi.string().valid(...Object.values(constants.BOOKING_STATUS)),
             bookedItemId: Joi.any(),
+            businessId: Joi.any(),
         });
         const { error } = schema.validate(req.body);
         if (error) {

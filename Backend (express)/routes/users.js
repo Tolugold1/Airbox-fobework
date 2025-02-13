@@ -18,7 +18,7 @@ router.get('/', function(req, res, next) {
 
 router.post("/signup",  validateSignup, controller.HTTPUserSignUp)
 
-router.post("/signin", validateSignin, controller.HTTPUserSignIn)
+router.post("/login", validateSignin, controller.HTTPUserSignIn)
 
 router.post("/forgot-password", validateForgotPasword, controller.HTTPUserForgotPassword)
 

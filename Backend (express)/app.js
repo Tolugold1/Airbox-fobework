@@ -12,6 +12,7 @@ const bookingRouter = require("./routes/bookings.router");
 const businessAnalyticsRouter = require("./routes/business.analytics.router");
 const clientRouter = require("./routes/client.router");
 const businessRouter = require("./routes/business.router")
+const googleRouter = require("./routes/google-auth");
 
 var { HTTPError } = require("./utils/error");
 var cors = require("cors");
@@ -24,7 +25,7 @@ const passport = require("passport");
 // connect to the database.
 connectDB();
 
-app.use(cors({ origin: ["http://localhost:3000", "http://localhost:8000" ], credentials: true }));
+app.use(cors({ origin: ["http://localhost:5173", "http://localhost:8000" ], credentials: true }));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -59,6 +60,7 @@ app.use('/api/booking', bookingRouter);
 app.use('/api/businessAnalytics', businessAnalyticsRouter);
 app.use('/api/client', clientRouter);
 app.use('/api/business', businessRouter);
+app.use('/api/Oauth', googleRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -7,6 +7,7 @@ exports.HTTPCreateProfile = async (req, res, next) => {
   try {
     console.log("body", req.body);
     let body = req.body;
+    body.userId = req.user._id;
     const data = await Service.createProfile(body);
 
     handleResponse({
@@ -43,6 +44,7 @@ exports.HTTPGetProfile = async (req, res, next) => {
 exports.HTTPUpdateProfile = async (req, res, next) => {
     try {
       let updateData = req.body;
+      console.log("updateData", updateData);
       const data = await Service.updateProfile({ 
         userId: req.user._id,
         updateData

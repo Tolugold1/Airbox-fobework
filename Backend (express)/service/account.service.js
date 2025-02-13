@@ -67,6 +67,7 @@ exports.SignUp = async function ({ name, email, password, confirmPassword, acctT
           });
           await user_verification.save();
       }
+      
       await sendVerificationMail({
         // type: "verification",
         recipient: user.email,
@@ -75,7 +76,8 @@ exports.SignUp = async function ({ name, email, password, confirmPassword, acctT
       });
   
       await user.save();
-  
+
+      return { "status": "User created successfully", "statusCode": 200 };
     } catch (error) {
       console.log("sigining error", error);
       throw error;

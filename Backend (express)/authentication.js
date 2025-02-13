@@ -68,7 +68,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.CURRENT_URL + "/api/auth/google/redirect",
+      callbackURL: process.env.CURRENT_URL + "/api/Oauth/google/airboxClient",
     },
     function (accessToken, refreshToken, profile, done) {
       User.findOne({ username: profile.emails[0].value }, async (err, user) => {
@@ -91,9 +91,7 @@ passport.use(
           if (profile.emails[0].value) {
             user.email = profile.emails[0].value.toLowerCase();
           }
-          if (profile.photos[0].value) {
-            user.profile_pics = profile.photos[0].value;
-          }
+
           user.AcctType = "Client";
           let profile_id = await helper.generateUniqueString(user);
           user.profile_id = profile_id;
@@ -115,9 +113,68 @@ passport.use(
   )
 );
 
+// official google auth
+passport.use(
+  "google-alt",
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.CURRENT_URL + "/api/Oauth/google/official/airbox",
+    },
+    function (accessToken, refreshToken, profile, done) {
+      User.findOne({ username: profile.emails[0].value }, async (err, user) => {
+        if (err) {
+          console.log(err);
+          return done(err, false);
+        } else if (!err && user !== null) {
+          // ckeck if user has a profile_id
+          if (user.profile_id !== undefined && user.profile_id !== null) {
+            return done(null, user);
+          } else {
+            user.profile_id = await helper.generateUniqueString(user);
+            user.save();
+          }
+        } else {
+          // create a new user document for the current user.
+          user = new User({ username: profile.emails[0].value });
+          if (profile.displayName) {
+            user.name = profile.displayName;
+          }
+          if (profile.emails[0].value) {
+            user.email = profile.emails[0].value.toLowerCase();
+          }
+          if (profile.photos[0].value) {
+            user.profile_pics = profile.photos[0].value;
+          }
+          user.AcctType = "Official";
+          user.last7daysMail.push({ count: 0 });
+          user.last24hoursMail.push({ count: 0 });
+          user.last14daysMail.push({ count: 0 });
+          user.last30daysMail.push({ count: 0 });
+          let profile_id = await helper.generateUniqueString(user);
+          user.profile_id = profile_id;
+          user.authType = AUTH_TYPE.OAUTH;
+          let analytics = new Analytics({userId: user._id});
+          await analytics.save();
+          user.analytics = analytics._id;
+          user.Confirmed = true;
+          user.save((err, user) => {
+            if (err) {
+              return done(err, false);
+            } else {
+              return done(null, user);
+            }
+          });
+        }
+      }).maxTimeMS(60000);
+    }
+  )
+);
+
 exports.authenticateJWT = async (req, res, next) => {
   const token = req.cookies.jwt;
-  // console.log("token", token);
+  console.log("token", token);
   if (token) {
     try {
       // Verify JWT token

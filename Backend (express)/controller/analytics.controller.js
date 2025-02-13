@@ -27,7 +27,7 @@ exports.HTTPUpdateAnalytics = async (req, res, next) => {
       data,
     });
   } catch (error) {
-    console.log("signup error", error);
+    console.log("Error getting business updating business analytics", error);
     next(error);
   }
 };
@@ -35,11 +35,12 @@ exports.HTTPUpdateAnalytics = async (req, res, next) => {
 
 exports.HTTPGetAnalytics = async (req, res, next) => {
     try {
+      
       let {    
-          businessId,
-          timeframe,
-      } = req.body;
-      const data = await Service.updateBusinessAnalytics({ 
+        businessId,
+        timeframe,
+      } = req.params;
+      const data = await Service.getBookingAnalytics({ 
         businessId,
         timeframe,
       });
@@ -51,7 +52,7 @@ exports.HTTPGetAnalytics = async (req, res, next) => {
         data,
       });
     } catch (error) {
-      console.log("signup error", error);
+      console.log("Error getting business analytics successfully.", error);
       next(error);
     }
 };

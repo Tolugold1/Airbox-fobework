@@ -7,7 +7,7 @@ const {
  } = require("../validation/client.joi.js")
 
 
-router.post("/create-profile",  validateClientSchema,  authenticate.authenticateJWT,  controller.HTTPCreateProfile)
+router.post("/create-profile",  /* validateClientSchema, */  authenticate.authenticateJWT,  controller.HTTPCreateProfile)
 
 router.get("/get-profile", authenticate.authenticateJWT, controller.HTTPGetProfile)
 

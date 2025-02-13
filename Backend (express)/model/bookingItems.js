@@ -29,8 +29,8 @@ const bookingItems = new Schema(
         required: true
     },
     availableSlots: {
-        startTime: { type: Date, required: true },
-        endTime: { type: Date, required: true }
+        startTime: { type: String, required: true },
+        endTime: { type: String, required: true }
     },
     open_days: [String],
     pricing: {

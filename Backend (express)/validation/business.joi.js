@@ -10,7 +10,6 @@ module.exports = {
     validateBusinessSchema: (req, res, next) => {
         const schema = Joi.object({
             _id: Joi.any(),
-            userId: Joi.any(),
             name: Joi.string().required(),
             location: Joi.string(),
             Email: Joi.string().required(),

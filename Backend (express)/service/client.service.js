@@ -44,7 +44,8 @@ exports.getProfile = async ({userId}) => {
         if (!profile) throw NotFoundError("Profile not found", 404);
         return profile;
     } catch (error) {
-        throw new Error(`Error fetching profile: ${error.message}`);
+        console.log("error", error);
+        throw new Error(`Error fetching profile`);
     }
 }
 

@@ -10,9 +10,6 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
-    profile_pics: {
-      type: Schema.Types.Mixed,
-    },
     email: {
       type: String,
       unique: true,
@@ -38,8 +35,6 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
-    phone_number: { type: String, required: false },
-    phone_number_verified: { type: Boolean, default: false },
     lastAccess: {
       type: String,
     },
@@ -47,11 +42,6 @@ const userSchema = new Schema(
       type: String,
     },
     Confirmed: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    admin: {
       type: Boolean,
       default: false,
       required: true,

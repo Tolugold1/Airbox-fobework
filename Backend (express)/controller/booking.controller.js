@@ -5,14 +5,52 @@ const {
 
 exports.HTTPCreateBookingItems = async (req, res, next) => {
   try {
-    const data = await Service.createBookingItem({ 
-        ...req.body
-    });
+    console.log("req.body", req.body);
+    const data = await Service.createBookingItem(req.body);
 
     handleResponse({
       res,
       status: 200,
       message: "Business booking item created successfully.",
+      data,
+    });
+  } catch (error) {
+    console.log("Error creating booking item", error);
+    next(error);
+  }
+};
+
+exports.HTTPEditBookingItems = async (req, res, next) => {
+  try {
+    console.log("req.body", req.body);
+    const data = await Service.editBookingItem(req.body);
+
+    handleResponse({
+      res,
+      status: 200,
+      message: "Business booking item updated successfully.",
+      data,
+    });
+  } catch (error) {
+    console.log("Error creating booking item", error);
+    next(error);
+  }
+};
+
+
+exports.HTTPsGetBusinessCreatedBookingItems = async (req, res, next) => {
+  try {
+    let {    
+      businessId
+    } = req.params;
+    const data = await Service.getBusinessCreatedBookingItems({ 
+      businessId
+    });
+
+    handleResponse({
+      res,
+      status: 200,
+      message: "Business analytics gotten successfully.",
       data,
     });
   } catch (error) {
@@ -27,24 +65,45 @@ exports.HTTPBookItem = async (req, res, next) => {
       let {    
         clientProfileId, 
         bookedItemId, 
-        bookingDetails
+        appointmentDate,
+        businessId,
+        status
       } = req.body;
+      console.log("req.body", req.body);
       const data = await Service.bookItem({ 
         clientProfileId, 
         bookedItemId, 
-        bookingDetails
+        appointmentDate,
+        businessId,
+        status
       });
   
       handleResponse({
         res,
         status: 200,
-        message: "Business analytics gotten successfully.",
+        message: "Item booked successfully.",
         data,
       });
     } catch (error) {
-      console.log("signup error", error);
+      console.log("Booking for an item failed", error);
       next(error);
     }
+};
+
+exports.HTTPsGetAllBookingItems = async (req, res, next) => {
+  try {
+    const data = await Service.allBookingItemFromBusinesses();
+
+    handleResponse({
+      res,
+      status: 200,
+      message: "All booking Items gotten successfully.",
+      data,
+    });
+  } catch (error) {
+    console.log("signup error", error);
+    next(error);
+  }
 };
   
 exports.HTTPEditBookingByClient = async (req, res, next) => {
@@ -97,7 +156,7 @@ exports.HTTPGetBusinessBookings = async (req, res, next) => {
   try {
     let {    
       businessId,
-    } = req.body;
+    } = req.params;
     const data = await Service.getBusinessBookingsRecord({ 
       businessId,
     });
@@ -114,13 +173,13 @@ exports.HTTPGetBusinessBookings = async (req, res, next) => {
   }
 };
 
-exports.HTTPCancelBooking = async (req, res, next) => {
+exports.HTTPUpdateBookingByBusiness = async (req, res, next) => {
     try {
       let {
         bookingId, 
         updateData
       } = req.body;
-      const data = await Service.cancelBookedItem({ 
+      const data = await Service.UpdateBookedItemByBusiness({ 
         bookingId, 
         updateData
       });

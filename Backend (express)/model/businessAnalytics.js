@@ -18,7 +18,7 @@ const businessAnalytics = new Schema({
         min: 0,
         default: 0
     },
-    totalScheduledBooking: {
+    TotalScheduledBooking: {
         type: Number,
         min: 0,
         default: 0
@@ -27,7 +27,12 @@ const businessAnalytics = new Schema({
         type: Number,
         min: 0,
         default: 0
-    }
+    },
+    NumberOfCreatedBookingItems: {
+        type: Number,
+        min: 0,
+        default: 0
+    },
 }, { timestamps: true, versionKey: false });
 
 const BusinessAnalytics = mongoose.model("businessAnalytics", businessAnalytics);

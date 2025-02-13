@@ -6,6 +6,6 @@ const controller = require("../controller/analytics.controller.js");
 
 router.put("/update-analytics",  authenticate.authenticateJWT,  controller.HTTPUpdateAnalytics)
 
-router.get("/get-analytics", authenticate.authenticateJWT, controller.HTTPGetAnalytics)
+router.get("/get-analytics/:businessId/:timeframe", authenticate.authenticateJWT, controller.HTTPGetAnalytics)
 
 module.exports = router;
